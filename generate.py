@@ -1,10 +1,11 @@
 from manimlib import *
 import random
-import time
+import shutil
 
 # "live"            Preview live presentation
 # "render"          Render to video file
-MODE = "render"
+# "compile"         Compile to separate videos
+MODE = "compile"
 
 # Clicker keycodes:
 # Left arrow:               65365   (Page up)
@@ -54,7 +55,8 @@ class PascalTrianglePresentation(Scene):
         self.chapter_even_odd_distribution()
         self.chapter_sierpinski_comparison()
 
-        exit()
+        # Outro
+        self.chapter_end_card()
 
     # Chapters
 
@@ -75,9 +77,9 @@ class PascalTrianglePresentation(Scene):
             Dot((-10, -10 - (size - 1), 0), radius=0, stroke_width=0),
             Dot((10, 10, 0), radius=0, stroke_width=0)
         )
+        random.seed(413)
         for n in range(size):
             for k in range(n + 1):
-                random.seed(time.time())
                 number = Tex(str(random.randint(1, 20)))
                 number.move_to((k - n / 2, -n, 0))
                 random_group += number
@@ -159,14 +161,14 @@ class PascalTrianglePresentation(Scene):
         self.pause()
 
         self.play(FadeToColor(random_group, RED), run_time=0.5)
-        self.pause(1.2)
+        self.pause(0.8)
         self.play(FadeOut(random_group), run_time=0.6)
 
         self.pause()
 
         pascal_objects[0][0][0].set_color(ORANGE)
 
-        self.play(Write(rule_1))
+        self.play(FadeIn(rule_1, UP))
 
         self.pause()
 
@@ -177,7 +179,7 @@ class PascalTrianglePresentation(Scene):
         self.play(
             FadeToColor(pascal_objects[0][0][0], WHITE),
             FadeToColor(rule_1, GREY_C),
-            Write(rule_2)
+            FadeIn(rule_2, UP)
         )
 
         self.pause()
@@ -232,7 +234,7 @@ class PascalTrianglePresentation(Scene):
                     *unhighlight_actions,
                     TransformMatchingTex(pascal_objects[n-1][k-1][0].copy(), pascal_objects[n][k][0]),
                     TransformMatchingTex(pascal_objects[n-1][k][0].copy(), pascal_objects[n][k][0]),
-                    run_time = 0.4 if n < 3 else 0.08
+                    run_time = 0.4 if n < 3 else 0.12
                 )
 
                 if n == 1:
@@ -242,7 +244,7 @@ class PascalTrianglePresentation(Scene):
                 self.play(
                     FadeOut(pascal_objects[n-1][-1][0]),
                     FadeOut(pascal_objects[n-1][-2][0]),
-                    run_time = 0.4 if n < 3 else 0.08
+                    run_time = 0.4 if n < 3 else 0.12
                 )
 
             if n == 2:
@@ -705,7 +707,7 @@ class PascalTrianglePresentation(Scene):
         fibonacci_objects[0][0].set_color(ORANGE)
         fibonacci_objects[1][0].set_color(ORANGE)
 
-        self.play(Write(rule_1))
+        self.play(FadeIn(rule_1, UP))
         self.play(Write(fibonacci_objects[0][0]), Write(fibonacci_objects[1][0]))
 
         self.pause()
@@ -714,7 +716,7 @@ class PascalTrianglePresentation(Scene):
             FadeToColor(fibonacci_objects[0][0], WHITE),
             FadeToColor(fibonacci_objects[1][0], WHITE),
             FadeToColor(rule_1, GREY_C),
-            Write(rule_2)
+            FadeIn(rule_2, UP)
         )
 
         self.pause()
@@ -812,7 +814,6 @@ class PascalTrianglePresentation(Scene):
                 row.append(pair_outline)
             pair_outlines.append(row[1:] + [row[0]])
 
-
         arrows, arrow_group = [], VGroup()
         for n in range(size - 1):
             row = []
@@ -869,11 +870,18 @@ class PascalTrianglePresentation(Scene):
             pascal_objects[n][-2][0].set_color(rainbow_colors[(2 * n + 1) % len(rainbow_colors)])
             pascal_objects[n][-1][0].set_color(rainbow_colors[(n - 1) % len(rainbow_colors)])
 
-        self.play(ShowCreation(line_group), *highlight_actions)
+        self.play(
+            ShowCreation(line_group),
+            *highlight_actions
+        )
 
         self.pause()
 
-        self.play(*sum_actions, FadeIn(sums[-1]))
+        self.play(
+            *sum_actions,
+            FadeIn(sums[-1]),
+            run_time=1.6
+        )
 
         self.pause()
 
@@ -1033,11 +1041,11 @@ class PascalTrianglePresentation(Scene):
 
         # Animation
 
-        self.play(ShowCreation(pascal_group))
+        self.play(ShowCreation(pascal_group), run_time=2)
 
         self.pause()
 
-        self.play(to_mark.animate.set_fill(WHITE, opacity=1))
+        self.play(to_mark.animate.set_fill(WHITE, opacity=1), run_time=2)
 
         self.pause()
 
@@ -1074,42 +1082,25 @@ class PascalTrianglePresentation(Scene):
 
         self.play(FadeIn(equivalence_text, UP))
 
-        self.pause(0.5)
-
-        # Intermediate creation (better loading time)
-
-        end_card_image = ImageMobject("assets/img/end_card.png")
-        end_card_image.set_height(8)
-
-        # Continuing animation
-
         self.pause()
 
-
-        self.play(
-            FadeOut(scream_image),
-            FadeOut(equivalence_text),
-            FadeOut(sierpinski_big_image)
-        )
-
-        self.play(FadeIn(end_card_image))
-
-        for _ in range(3):
-            self.pause()
-
-        self.end_slide()
+        self.end_slide("fade_out")
 
     def chapter_end_card(self):
         # Creation
 
-        background_image = ImageMobject("assets/img/end_card_background.png")
-        background_image.set_height(8)
+        size = 13
+
+        pascal_objects, pascal_group = self.create_pascal_triangle(size)
+        pascal_group.set_color("#272727")
+        pascal_group.scale(1.8)
+        pascal_group.shift((0, 11.4, 0))
 
         title_text = Text("\"The hidden beauty of Pascal's Triangle\"\n  by Tim Huisman")
 
         supervisor_text = Text("Supervised by Sjaak Baars", color=GREY_B)
         supervisor_text.scale(0.8)
-        manim_text = Text("Presented with Manim\n  by 3Blue1Brown", color=GREY_C)
+        manim_text = Text("Presented with Manim\n  by 3Blue1Brown", color=GREY_B)
         manim_text.scale(0.8)
 
         image_credits = [
@@ -1122,7 +1113,7 @@ class PascalTrianglePresentation(Scene):
             "https://www.wikidata.org/wiki/Q18891157"
         ]
 
-        image_credits_text = Text("Images used:\n" + "\n".join(image_credits), color=GREY_D, font_size=14)
+        image_credits_text = Text("Images used:\n" + "\n".join(image_credits), color=GREY_C, font_size=14)
 
         text_group = VGroup(
             title_text,
@@ -1135,8 +1126,14 @@ class PascalTrianglePresentation(Scene):
 
         # Animation
 
-        self.add(background_image)
-        self.add(text_group)
+        self.play(
+            FadeIn(pascal_group),
+            FadeIn(text_group)
+        )
+
+        self.pause()
+
+        self.end_slide("fade_out")
 
     # Utils
 
@@ -1145,11 +1142,19 @@ class PascalTrianglePresentation(Scene):
             self.cont = True
 
     def on_key_press(self, symbol, modifiers):
-        # print(symbol)
-        # if symbol == 65366:
         self.cont = True
 
     def pause(self, max_time=86400):
+        if MODE == "compile" and max_time > 60:
+            if self.num_plays <= self.start_at_animation_number:
+                return
+
+            f = open("temp", "w")
+            f.write(str(self.num_plays))
+            f.close()
+
+            exit()
+
         if MODE == "render" and max_time > 60:
             max_time = 1
 
@@ -1173,15 +1178,12 @@ class PascalTrianglePresentation(Scene):
 
         self.remove(all_group)
 
-    def create_pascal_triangle(self, size, start=0, with_numbers=True, with_zeros=False, stroke_width=4):
+    def create_pascal_triangle(self, size, with_numbers=True, with_zeros=False, stroke_width=4):
         pascal_objects = []
         pascal_group = VGroup()
 
         for n in range(size):
             row = []
-
-            if n < start:
-                continue
 
             for k in range(n + 1):
                 square = Square(stroke_width=stroke_width)
@@ -1216,6 +1218,7 @@ class PascalTrianglePresentation(Scene):
     def construct(self):
         self.startup()
         self.start_presentation()
+        self.shutdown()
 
     def startup(self):
         # Creation
@@ -1226,7 +1229,7 @@ class PascalTrianglePresentation(Scene):
         self.cont = False
         self.click_enabled = False
 
-        if MODE == "live":
+        if MODE in ["live", "compile"]:
             count_texts = [Text(str(j)) for j in range(4)]
             count_texts[0].to_corner(LEFT + DOWN)
 
@@ -1234,7 +1237,7 @@ class PascalTrianglePresentation(Scene):
 
         self.add(self.background)
 
-        if MODE == "live":
+        if MODE in ["live", "compile"]:
             for i in range(len(count_texts)):
                 if i > 0:
                     count_texts[i].next_to(count_texts[i-1], RIGHT)
@@ -1247,10 +1250,40 @@ class PascalTrianglePresentation(Scene):
 
         self.end_slide()
 
+    def shutdown(self):
+        if MODE == "compile":
+            f = open("temp", "w")
+            f.write("-1")
+            f.close()
+
+        exit()
+
 if __name__ == "__main__":
     if MODE == "live":
-        os.system("manimgl main.py PascalTrianglePresentation -l -f")
+        os.system("manimgl generate.py PascalTrianglePresentation -l")
     elif MODE == "render":
-        os.system("manim-render main.py PascalTrianglePresentation --file_name pascal_triangle_presentation.mp4 --hd -w -a")
+        os.system("manim-render generate.py PascalTrianglePresentation -w -a --file_name pascal_triangle_presentation.mp4 --hd --frame_rate 60")
+    elif MODE == "compile":
+        shutil.rmtree("snippets")
+
+        f = open("temp", "w")
+        f.write("0")
+        f.close()
+
+        i = 1
+        while True:
+            f = open("temp", "r")
+            start = int(f.read())
+            f.close()
+
+            if start == -1:
+                break
+
+            print(f"Rendering section {i}...")
+            os.system(f"manim-render generate.py PascalTrianglePresentation -w -a --file_name snippet_{i:03} --video_dir snippets -n {start} --hd --frame_rate 60")
+
+            i += 1
+
+        os.remove("temp")
     else:
-        print("No mode was picked")
+        print("ERROR: No mode was selected")
