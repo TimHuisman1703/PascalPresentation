@@ -1,0 +1,10 @@
+Preparations beforehand:
+1. Open the presentation and OBS
+2. Open settings on the display-page
+3. Start the presentation
+
+Actions at desk:
+1. Connect PC to second monitor and select "Extend these displays" (make sure)
+2. Right-click view in OBS and enable "Fullscreen Projector (Preview)"
+3. Select the second monitor
+4. Connect clicker and make sure it works
