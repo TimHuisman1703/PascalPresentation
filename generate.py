@@ -1147,6 +1147,7 @@ class PascalTrianglePresentation(Scene):
     def pause(self, max_time=86400):
         if MODE == "compile" and max_time > 60:
             if self.num_plays <= self.start_at_animation_number:
+                self.wait(0.1)
                 return
 
             f = open("temp", "w")
@@ -1270,18 +1271,20 @@ if __name__ == "__main__":
         f.write("0")
         f.close()
 
+        last = -1
         i = 1
         while True:
             f = open("temp", "r")
             start = int(f.read())
             f.close()
 
-            if start == -1:
+            if start == -1 or start == last:
                 break
 
             print(f"Rendering section {i}...")
             os.system(f"manim-render generate.py PascalTrianglePresentation -w -a --file_name snippet_{i:03} --video_dir snippets -n {start} --hd --frame_rate 60")
 
+            last = start
             i += 1
 
         os.remove("temp")

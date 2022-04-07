@@ -47,19 +47,19 @@ while cap_number < len(caps):
 
     while cap.isOpened():
         ret, frame = cap.read()
-        
+
         if ret == False:
             break
-        
+
         cv2.imshow(WINDOW_NAME, frame)
         cv2.waitKey(1)
-        
+
         end_time = time.time()
         while (end_time - start_time) < frame_interval:
             end_time = time.time()
-        
+
         start_time = end_time
-    
+
     cap_number += 1
 
 cv2.destroyAllWindows()
