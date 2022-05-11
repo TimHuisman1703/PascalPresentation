@@ -5,6 +5,7 @@ import time
 
 WINDOW_NAME = "Pascal's Triangle"
 FULLSCREEN = True
+MOUSE_CONTROLLED = False
 
 snippets = caps = frame_interval = None
 try:
@@ -26,6 +27,26 @@ else:
     cv2.moveWindow(WINDOW_NAME, screen.x - 1, screen.y - 1)
     cv2.resizeWindow(WINDOW_NAME, screen.width // 2, screen.height // 2)
 
+def pause():
+    global action
+
+    action = -1
+    while action == -1:
+        cv2.waitKey(1)
+
+    return action
+
+def click(event, x, y, flags, param):
+    global action
+
+    if event == cv2.EVENT_LBUTTONDOWN:
+        action = 0
+    elif event == cv2.EVENT_RBUTTONDOWN:
+        action = 1
+
+if MOUSE_CONTROLLED:
+    cv2.setMouseCallback(WINDOW_NAME, click)
+
 cap_number = 0
 
 while cap_number < len(caps):
@@ -35,13 +56,23 @@ while cap_number < len(caps):
     cv2.imshow(WINDOW_NAME, frame)
 
     if cap_number > 0:
-        key = cv2.waitKeyEx()
-        if key in [27]:
-            break
-        elif key in [2162688, 2490368, 2424832]:
+        action = 0
+        if not MOUSE_CONTROLLED:
+            key = cv2.waitKeyEx()
+            
+            if key in [2162688, 2490368, 2424832]:
+                action = 1
+            elif key in [27]:
+                action = 2
+        else:
+            action = pause()
+
+        if action == 1:
             cap_number -= 1
             caps[cap_number] = cv2.VideoCapture("snippets/videos/" + snippets[cap_number])
             continue
+        elif action == 2:
+            break
 
     start_time = time.time()
 
